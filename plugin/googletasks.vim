@@ -61,6 +61,7 @@ function! s:select_tasklist()
   else
     let s:settings['current_tasklist'] = '@default'
   endif
+  redraw
   call s:save_settings()
 endfunction
 
