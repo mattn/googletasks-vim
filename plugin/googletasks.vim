@@ -148,9 +148,48 @@ function! s:list_tasks()
   let tasks = json#decode(ret.content)
   if has_key(tasks, 'error')
     call s:revoke()
-    return []
+    return s:list_tasks()
   endif
   return tasks.items
+endfunction
+
+function! s:write_task()
+  let task = b:task
+  let task.title = getline(1)
+  let task.notes = join(getline(2, '$'), "\n")
+  call s:_update_task(task)
+  silent bw!
+endfunction
+
+function! s:edit_task(id)
+  if !has_key(s:settings, 'current_tasklist')
+    call s:select_tasklist()
+  endif
+
+  let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:id.'?oauth_token='.s:settings.access_token
+  let ret = http#get(url)
+  let task = json#decode(ret.content)
+
+  let winnum = bufwinnr(bufnr('__GOOGLETASKS:'.a:id))
+  if winnum != -1
+    if winnum != bufwinnr('%')
+      exe "normal \<c-w>".winnum."w"
+    endif
+  else
+    exec 'silent split' '__GOOGLETASKS:'.a:id
+  endif
+  silent %d _
+
+  if has_key(task, 'title')
+    call setline(1, task.title)
+  endif
+  if has_key(task, 'notes')
+    call setline(2, split(task.notes, "\n"))
+  endif
+  let b:task = task
+  setlocal filetype=googletasks buftype=acwrite bufhidden=delete noswapfile nomodified
+  normal! gg
+  au! BufWriteCmd <buffer> call s:write_task()
 endfunction
 
 function! s:menu_tasks()
@@ -159,6 +198,7 @@ function! s:menu_tasks()
   echo 'd: delete task'
   echo 'u: update task'
   echo 's: show task'
+  echo 'e: edit task'
   "echo 'c: toggle complete/uncomplete task'
   echo ''
   echohl None
@@ -180,6 +220,16 @@ function! s:GoogleTasks()
       endif
       call s:_update_task(tasks[no-1])
     endif
+  elseif c == 100
+    let no = str2nr(input('NO: '))
+    if no > 0 && no <= len(tasks)
+      call s:delete_task(tasks[no-1].id)
+    endif
+  elseif c == 101
+    let no = str2nr(input('NO: '))
+    if no > 0 && no <= len(tasks)
+      call s:edit_task(tasks[no-1].id)
+    endif
   elseif c == 115
     let no = str2nr(input('NO: '))
     if no > 0 && no <= len(tasks)
@@ -189,11 +239,6 @@ function! s:GoogleTasks()
     let no = str2nr(input('NO: '))
     if no > 0 && no <= len(tasks)
       call s:update_task(tasks[no-1])
-    endif
-  elseif c == 100
-    let no = str2nr(input('NO: '))
-    if no > 0 && no <= len(tasks)
-      call s:delete_task(tasks[no-1].id)
     endif
   endif
 endfunction
