@@ -1,7 +1,7 @@
 "=============================================================================
 " File: googletasks.vim
 " Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
-" Last Change: 12-May-2011.
+" Last Change: 13-May-2011.
 " Version: 0.1
 " WebPage: http://github.com/mattn/googletasks-vim
 " Usage:
@@ -146,9 +146,12 @@ function! s:list_tasks()
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks?oauth_token='.s:settings.access_token
   let ret = http#get(url)
   let tasks = json#decode(ret.content)
-  if has_key(tasks, 'error')
+  if type(tasks) != 4 || has_key(tasks, 'error')
     call s:revoke()
-    return s:list_tasks()
+    echohl Error
+    echo "Server Error"
+    echohl None
+    return
   endif
   return tasks.items
 endfunction
@@ -207,6 +210,9 @@ endfunction
 function! s:GoogleTasks()
   call s:initialize()
   let tasks = s:list_tasks()
+  if type(tasks) != 3
+    return
+  endif
   call s:show_tasks(tasks)
   call s:menu_tasks()
   let c = getchar()
