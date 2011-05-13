@@ -1,0 +1,16 @@
+googletasks-vim: vimscript for GoogleTasks
+
+INSTALL:
+    put webapi-vim and googletasks-vim into your runtime path.
+
+        # echo "I've finished to install pathogen.vim"
+        I've finished to install pathogen.vim
+
+        # cd ~/.vim/bundle
+        # git clone https://github.com/mattn/webapi-vim.git
+        # git clone https://github.com/mattn/googletaks-vim.git
+
+USAGE:
+
+    :GoogleTasks
+
