@@ -32,7 +32,9 @@ endfunction
 function! s:initialize()
   call s:load_settings()
   if !has_key(s:settings, 'access_token')
-    let auth_url = 'https://accounts.google.com/o/oauth2/auth?client_id=269809711568.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/tasks&response_type=code'
+    "let auth_url = 'https://accounts.google.com/o/oauth2/auth?client_id=269809711568.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/tasks&response_type=code'
+    let auth_url = 'http://bit.ly/lbAaTD'
+    echo "Access ".auth_url."\nand type the code that show in the browser into below."
     if has('win32') || has('win64')
       silent! exe '!start rundll32 url.dll,FileProtocolHandler '.auth_url
     else
