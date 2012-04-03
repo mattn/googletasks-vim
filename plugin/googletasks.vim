@@ -1,7 +1,7 @@
 "=============================================================================
 " File: googletasks.vim
 " Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
-" Last Change: 13-May-2011.
+" Last Change: 03-Apr-2012.
 " Version: 0.1
 " WebPage: http://github.com/mattn/googletasks-vim
 " Usage:
@@ -41,17 +41,17 @@ function! s:initialize()
       call system('xdg-open '''.auth_url.'''')
     endif
     let code = input('CODE: ')
-    let res = http#post('https://accounts.google.com/o/oauth2/token', {'client_id': '269809711568.apps.googleusercontent.com', 'client_secret': 'jsSq8dIAuI_oyRSTCWihBGQl', 'code': code, 'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob', 'grant_type': 'authorization_code'})
+    let res = webapi#http#post('https://accounts.google.com/o/oauth2/token', {'client_id': '269809711568.apps.googleusercontent.com', 'client_secret': 'jsSq8dIAuI_oyRSTCWihBGQl', 'code': code, 'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob', 'grant_type': 'authorization_code'})
     silent! unlet s:settings
-    let s:settings = json#decode(res.content)
+    let s:settings = webapi#json#decode(res.content)
     call s:save_settings()
   endif
 endfunction
 
 function! s:select_tasklist()
   let url = 'https://www.googleapis.com/tasks/v1/users/@me/lists?oauth_token='.s:settings.access_token
-  let ret = http#get(url)
-  let tasklist = json#decode(ret.content)
+  let ret = webapi#http#get(url)
+  let tasklist = webapi#json#decode(ret.content)
   let i = 1
   for item in tasklist.items
     echo i . ':' . item.title
@@ -69,7 +69,7 @@ endfunction
 
 function! s:_update_task(task)
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:task['id'].'?oauth_token='.s:settings.access_token
-  let ret = http#post(url, json#encode(a:task), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'})
+  let ret = webapi#http#post(url, webapi#json#encode(a:task), {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'PUT'})
 endfunction
 
 function! s:update_task(task)
@@ -93,7 +93,7 @@ function! s:delete_task(id)
     call s:select_tasklist()
   endif
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:id.'?oauth_token='.s:settings.access_token
-  let ret = http#post(url, '', {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'DELETE'})
+  let ret = webapi#http#post(url, '', {'Content-Type': 'application/json', 'X-HTTP-Method-Override': 'DELETE'})
 endfunction
 
 function! s:insert_task()
@@ -111,7 +111,7 @@ function! s:insert_task()
   endif
 
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks?oauth_token='.s:settings.access_token
-  let ret = http#post(url, json#encode({'title': title, 'notes': notes}), {'Content-Type': 'application/json'})
+  let ret = webapi#http#post(url, webapi#json#encode({'title': title, 'notes': notes}), {'Content-Type': 'application/json'})
 endfunction
 
 function! s:show_task(id)
@@ -120,8 +120,8 @@ function! s:show_task(id)
   endif
 
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:id.'?oauth_token='.s:settings.access_token
-  let ret = http#get(url)
-  let task = json#decode(ret.content)
+  let ret = webapi#http#get(url)
+  let task = webapi#json#decode(ret.content)
   if has_key(task, 'title')
     echo task.title
   endif
@@ -146,8 +146,8 @@ function! s:list_tasks()
   endif
 
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks?oauth_token='.s:settings.access_token
-  let ret = http#get(url)
-  let tasks = json#decode(ret.content)
+  let ret = webapi#http#get(url)
+  let tasks = webapi#json#decode(ret.content)
   if type(tasks) != 4 || has_key(tasks, 'error')
     call s:revoke()
     echohl Error
@@ -172,8 +172,8 @@ function! s:edit_task(id)
   endif
 
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:id.'?oauth_token='.s:settings.access_token
-  let ret = http#get(url)
-  let task = json#decode(ret.content)
+  let ret = webapi#http#get(url)
+  let task = webapi#json#decode(ret.content)
 
   let winnum = bufwinnr(bufnr('__GOOGLETASKS:'.a:id))
   if winnum != -1
