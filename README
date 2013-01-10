@@ -8,7 +8,7 @@ INSTALL:
 
         # cd ~/.vim/bundle
         # git clone https://github.com/mattn/webapi-vim.git
-        # git clone https://github.com/mattn/googletaks-vim.git
+        # git clone https://github.com/mattn/googletasks-vim.git
 
 USAGE:
 
