@@ -1,7 +1,7 @@
 "=============================================================================
 " File: googletasks.vim
 " Author: Yasuhiro Matsumoto <mattn.jp@gmail.com>
-" Last Change: 03-Apr-2012.
+" Last Change: 03-Dec-2012.
 " Version: 0.1
 " WebPage: http://github.com/mattn/googletasks-vim
 " Usage:
@@ -33,7 +33,7 @@ function! s:initialize()
   call s:load_settings()
   if !has_key(s:settings, 'access_token')
     "let auth_url = 'https://accounts.google.com/o/oauth2/auth?client_id=269809711568.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=https://www.googleapis.com/auth/tasks&response_type=code'
-    let auth_url = 'http://bit.ly/lbAaTD'
+    let auth_url = 'http://j.mp/VntfJF'
     echo "Access ".auth_url."\nand type the code that show in the browser into below."
     if has('win32') || has('win64')
       silent! exe '!start rundll32 url.dll,FileProtocolHandler '.auth_url
@@ -174,6 +174,9 @@ function! s:edit_task(id)
   let url = 'https://www.googleapis.com/tasks/v1/lists/'.s:settings['current_tasklist'].'/tasks/'.a:id.'?oauth_token='.s:settings.access_token
   let ret = webapi#http#get(url)
   let task = webapi#json#decode(ret.content)
+  if has_key(task, 'error')
+    return
+  endif
 
   let winnum = bufwinnr(bufnr('__GOOGLETASKS:'.a:id))
   if winnum != -1
